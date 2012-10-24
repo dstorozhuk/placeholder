@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * Implemenation of hook_form_alter().
+ */
+function placeholder_form_alter(&$form, &$form_state, $form_id) {
+  placeholder_form_process($form);
+}
+
+function placeholder_library() {
+  $libraries['jquery.placeholder'] = array(
+    'title' => 'Query Placeholder', 
+    'website' => 'https://github.com/danielstocks/jQuery-Placeholder', 
+    'version' => VERSION, 
+    'js' => array(
+       drupal_get_path('module', 'placeholder') . '/library/jquery.placeholder.min.js' => array(
+        'group' => JS_LIBRARY,
+        'weight' => -19,
+      ),
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Set placeholder text as the default value for form elements that have
+ * specified #placeholder => 'foo' in its form builder function. Recursion
+ * is used to make sure elements within field groups are accounted for.
+ */
+function placeholder_form_process(&$form) {
+  //dpm($form);
+  foreach ( element_children($form) as $key ) {
+    if (isset($form[$key]['#type'])) {
+      if ( in_array($form[$key]['#type'], array('textfield', 'password', 'textarea')) && !empty($form[$key]['#placeholder']) ) {
+        $item = &$form[$key];
+      
+        $item['#attributes']['class'][] = 'placeholder';
+      
+        // Add placeholder-label-hidden class.
+        if ( isset($item['#placeholder_label_hidden']) && $item['#placeholder_label_hidden'] ) {
+          $item['#attributes']['class'][] = 'placeholder-label-hidden';
+        }
+      
+        // If #placeholder is set to TRUE use the #title as the placeholder.
+        if ( is_bool($item['#placeholder']) && $item['#placeholder'] === TRUE ) {
+          $item['#attributes']['placeholder'] = $item['#title'];
+        }
+        else {
+          $item['#attributes']['placeholder'] = $item['#placeholder'];
+        }
+      }
+      placeholder_add('input[placeholder], textarea[placeholder]');
+    }
+    drupal_add_library('placeholder', 'jquery.placeholder');
+    // Check if this item has children and check them accordingly.
+    placeholder_form_process($form[$key]);
+  }
+  
+}
+
+/**
+ * Add placeholder Styles/Scripts.
+ */
+function placeholder_add($selector, $options = array()) {
+  $added = drupal_static(__FUNCTION__, array());
+  if ( !isset($added[$selector]) ) {
+    drupal_add_js(drupal_get_path('module', 'placeholder') . '/placeholder.js');
+    drupal_add_js(array('placeholder' => array($selector => $options)), 'setting');
+    $added[$selector] = TRUE;
+  }
+}

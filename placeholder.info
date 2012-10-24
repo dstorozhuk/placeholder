@@ -1,0 +1,7 @@
+name            = jQuery Placeholder
+description     = Adds a FAPI property to allow for "placeholder" text to appear in a textfield element. Description for plugin  on RU can be found <a href="http://www.xiper.net/collect/js-plugins/html5-and-css3/jquery-placeholder.html">here</a>.
+core            = 7.x
+package         = jQuery plugins
+version         = 7.x-1.0-dev
+
+
